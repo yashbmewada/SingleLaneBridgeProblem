@@ -13,10 +13,5 @@ public class MonitorSemaphore implements Bridge{
 		
 	}
 
-	@Override
-	public void crossBridge(int direction) {
-		// TODO Auto-generated method stub
-		
-	}
 
 }
