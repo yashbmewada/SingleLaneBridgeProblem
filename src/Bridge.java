@@ -5,5 +5,4 @@ public interface Bridge{
 	
 	public void leaveBridge(int direction);
 	
-	public void crossBridge(int direction);
 }
