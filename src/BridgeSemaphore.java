@@ -1,5 +1,5 @@
 
-public class MonitorSemaphore implements Bridge{
+public class BridgeSemaphore implements Bridge{
 
 	@Override
 	public void arriveBridge(int direction) {
