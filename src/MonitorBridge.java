@@ -3,12 +3,15 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class MonitorBridge implements Bridge {
-	
-	 private static int totalEvents;
-	 private static int[] waitingCars;
-	 private static int[] activeCars;
-	 private Lock bridgeLock = new ReentrantLock(true);
-	 private Condition[] waitingCondition;
+
+    private static final long startTime = System.nanoTime();
+
+
+    static int totalEvents;
+	 static int[] waitingCars;
+	 static int[] activeCars;
+	 Lock bridgeLock = new ReentrantLock(true);
+	 Condition[] waitingCondition;
 
 
 
@@ -24,25 +27,36 @@ public class MonitorBridge implements Bridge {
 
 
 	@Override
-	public synchronized void arriveBridge(int direction) {
+	public void arriveBridge(int direction,int carId) {
 
+	     long enterTime;
 	     bridgeLock.lock();
 
 
 	     try{
-	         while(activeCars[1-direction] > 0  || waitingCars[1-direction] != 0){
+//	    	 System.out.println(carId+ " "+ direction);
+	         while(activeCars[1-direction] > 0  || (activeCars[direction]> 0 &&waitingCars[1-direction] != 0)){
+	        	 //System.out.println(activeCars[1-direction]+ "  " +  waitingCars[1-direction]);
+//	        	 System.out.println("inside" +carId+ " "+ direction);
 	             waitingCars[direction]++;
 	             waitingCondition[direction].await();
 	             waitingCars[direction]--;
 
              }
 
+
              activeCars[direction]++;
+	         enterTime = System.nanoTime() - startTime;
+
+             System.out.printf(" car with id %d from %d direction is entering. \n  " , carId,direction);
          }catch (InterruptedException e){
              System.out.println("Threads interrupted");
          }
          finally {
+            // System.out.println("in finally");
 	         bridgeLock.unlock();
+             //System.out.println(" in finally after unlock lock");
+
          }
 
 
@@ -50,16 +64,27 @@ public class MonitorBridge implements Bridge {
 	}
 
 	@Override
-	public synchronized void leaveBridge(int direction) {
+	public void leaveBridge(int direction,int carId) {
+       // System.out.println(" before leave lock");
             bridgeLock.lock();
+        //System.out.println(" after leave lock");
 
-            try{
+
+        try{
                 activeCars[direction]--;
+                
                 if(activeCars[direction]==0){
                     if(waitingCars[1-direction] != 0){
                         waitingCondition[1-direction].signal();
                     }
+                    else {
+                    	if(waitingCars[direction] != 0) {
+                    		waitingCondition[direction].signal();
+                    	}
+                    }
                 }
+            
+                System.out.printf(" car with id %d from %d direction is leaving. \n " , carId,direction );
 
             }finally {
                 bridgeLock.unlock();
