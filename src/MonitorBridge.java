@@ -3,8 +3,11 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class MonitorBridge implements Bridge {
-	
-	 static int totalEvents;
+
+    private static final long startTime = System.nanoTime();
+
+
+    static int totalEvents;
 	 static int[] waitingCars;
 	 static int[] activeCars;
 	 Lock bridgeLock = new ReentrantLock(true);
@@ -24,8 +27,9 @@ public class MonitorBridge implements Bridge {
 
 
 	@Override
-	public synchronized void arriveBridge(int direction) {
+	public synchronized void arriveBridge(int direction,int carId) {
 
+	     long enterTime;
 	     bridgeLock.lock();
 
 
@@ -37,12 +41,19 @@ public class MonitorBridge implements Bridge {
 
              }
 
+
              activeCars[direction]++;
+	         enterTime = System.nanoTime() - startTime;
+
+             System.out.printf(" car with id %d from %d direction is entering. \n  " , carId,direction);
          }catch (InterruptedException e){
              System.out.println("Threads interrupted");
          }
          finally {
+            // System.out.println("in finally");
 	         bridgeLock.unlock();
+             //System.out.println(" in finally after unlock lock");
+
          }
 
 
@@ -50,16 +61,20 @@ public class MonitorBridge implements Bridge {
 	}
 
 	@Override
-	public synchronized void leaveBridge(int direction) {
+	public synchronized void leaveBridge(int direction,int carId) {
+       // System.out.println(" before leave lock");
             bridgeLock.lock();
+        //System.out.println(" after leave lock");
 
-            try{
+
+        try{
                 activeCars[direction]--;
                 if(activeCars[direction]==0){
                     if(waitingCars[1-direction] != 0){
                         waitingCondition[1-direction].signal();
                     }
                 }
+                System.out.printf(" car with id %d from %d direction is leaving. \n " , carId,direction );
 
             }finally {
                 bridgeLock.unlock();
