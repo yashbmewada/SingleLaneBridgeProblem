@@ -4,11 +4,11 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class MonitorBridge implements Bridge {
 	
-	 static int totalEvents;
-	 static int[] waitingCars;
-	 static int[] activeCars;
-	 Lock bridgeLock = new ReentrantLock(true);
-	 Condition[] waitingCondition;
+	 private static int totalEvents;
+	 private static int[] waitingCars;
+	 private static int[] activeCars;
+	 private Lock bridgeLock = new ReentrantLock(true);
+	 private Condition[] waitingCondition;
 
 
 
